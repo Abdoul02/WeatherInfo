@@ -17,7 +17,9 @@ import android.view.ViewGroup
 import android.widget.SimpleAdapter
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -28,7 +30,10 @@ import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
 import com.example.weatherinfo.ViewsImplementation
 import com.example.weatherinfo.model.WeatherData
+import com.example.weatherinfo.model.enums.WeatherTypes
 import com.google.android.gms.location.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_home.*
 import other.ForecastAdapter
 import javax.inject.Inject
@@ -41,8 +46,8 @@ class HomeFragment : Fragment() {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var forecastAdapter: ForecastAdapter
     lateinit var forecastRecycleView: RecyclerView
+    lateinit var addFavoriteFab: FloatingActionButton
 
-    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION = 101
 
     override fun onCreateView(
@@ -56,6 +61,7 @@ class HomeFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         forecastRecycleView = root.findViewById(R.id.forecastRecycleView)
+        addFavoriteFab = root.findViewById(R.id.favouriteFab)
         this.context?.let { mContext ->
             forecastAdapter = ForecastAdapter(mContext)
             forecastRecycleView.layoutManager = LinearLayoutManager(mContext)
@@ -154,6 +160,7 @@ class HomeFragment : Fragment() {
         forecastAdapter.setData(forecast.list)
 
         if (!currentWeather.weather.isNullOrEmpty()) {
+            updateBackground(currentWeather.weather[0].main)
             clProgress.visibility = View.GONE
             clCurrentWeather.visibility = View.VISIBLE
             clForeCastWeather.visibility = View.VISIBLE
@@ -179,6 +186,60 @@ class HomeFragment : Fragment() {
                 currentWeather.main.temp_max.toInt().toString(),
                 "\u2103"
             )
+        }
+        favouriteFab.setOnClickListener { view ->
+            Snackbar.make(
+                view,
+                "Location: ${currentWeather.coord.lat}, ${currentWeather.coord.lon}",
+                Snackbar.LENGTH_LONG
+            )
+                .setAction("Action", null).show()
+        }
+
+    }
+
+    private fun updateBackground(weatherType: String) {
+        when (weatherType) {
+            WeatherTypes.CLEAR.types -> {
+                clCurrentWeather.background =
+                    ContextCompat.getDrawable(this.context!!, R.drawable.sea_cloudy)
+                clForeCastWeather.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this.context!!,
+                        R.color.cloudy
+                    )
+                )
+            }
+            WeatherTypes.CLOUD.types -> {
+                clCurrentWeather.background =
+                    ContextCompat.getDrawable(this.context!!, R.drawable.forest_cloudy)
+                clForeCastWeather.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this.context!!,
+                        R.color.cloudy
+                    )
+                )
+            }
+            WeatherTypes.RAIN.types -> {
+                clCurrentWeather.background =
+                    ContextCompat.getDrawable(this.context!!, R.drawable.forest_rainy)
+                clForeCastWeather.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this.context!!,
+                        R.color.rainy
+                    )
+                )
+            }
+            else -> {
+                clCurrentWeather.background =
+                    ContextCompat.getDrawable(this.context!!, R.drawable.forest_sunny)
+                clForeCastWeather.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this.context!!,
+                        R.color.sunny
+                    )
+                )
+            }
         }
     }
 }
