@@ -150,4 +150,24 @@ class Converters {
             object : TypeToken<List<ForecastWeather>>() {}.type
         )
     }
+
+    @TypeConverter
+    fun toCurrentWeatherModel(data: String): CurrentWeatherModel {
+        return gson.fromJson(data, object : TypeToken<CurrentWeatherModel>() {}.type)
+    }
+
+    @TypeConverter
+    fun fromCurrentWeatherModel(currentWeatherModel: CurrentWeatherModel?): String {
+        return gson.toJson(currentWeatherModel, object : TypeToken<CurrentWeatherModel>() {}.type)
+    }
+
+    @TypeConverter
+    fun toForecastModel(data: String): ForecastModel {
+        return gson.fromJson(data, object : TypeToken<ForecastModel>() {}.type)
+    }
+
+    @TypeConverter
+    fun fromForecastModel(forecastModel: ForecastModel?): String {
+        return gson.toJson(forecastModel, object : TypeToken<ForecastModel>() {}.type)
+    }
 }
