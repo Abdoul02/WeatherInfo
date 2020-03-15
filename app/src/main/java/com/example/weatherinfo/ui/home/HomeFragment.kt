@@ -2,6 +2,7 @@ package com.example.weatherinfo.ui.home
 
 import android.Manifest
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -25,11 +26,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
+import com.example.weatherinfo.ViewsImplementation
 import com.example.weatherinfo.model.WeatherData
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import other.ForecastAdapter
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 class HomeFragment : Fragment() {
 
@@ -47,26 +50,42 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        activity?.let {
-            (it.application as MyApplication).get(it).getApplicationComponent()
-                ?.injectApplication(this) }
+        if (!checkPermission()) {
+            requestPermission()
+        }
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         forecastRecycleView = root.findViewById(R.id.forecastRecycleView)
-        homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
         this.context?.let { mContext ->
             forecastAdapter = ForecastAdapter(mContext)
             forecastRecycleView.layoutManager = LinearLayoutManager(mContext)
             forecastRecycleView.setHasFixedSize(true)
             forecastRecycleView.adapter = forecastAdapter
-            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext)
-            getLastLocation()
+
+            if (checkPermission()) {
+                getDataFromViewModel()
+            }
         }
 
-        homeViewModel.weatherData.observe(viewLifecycleOwner, Observer {
-            updateViews(it)
-        })
         return root
+    }
+
+    private fun getDataFromViewModel() {
+        if (isLocationEnabled()) {
+            activity?.let {
+                (it.application as MyApplication).get(it).getApplicationComponent()
+                    ?.injectApplication(this)
+            }
+            homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
+            homeViewModel.weatherData.observe(viewLifecycleOwner, Observer {
+                updateViews(it)
+            })
+
+        } else {
+            showMessage("Turn on location")
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+        }
     }
 
     private fun checkPermission(): Boolean {
@@ -83,16 +102,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        this.activity?.let {
-            ActivityCompat.requestPermissions(
-                it,
-                arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ),
-                LOCATION_PERMISSION
-            )
-        }
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            LOCATION_PERMISSION
+        )
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -103,57 +119,7 @@ class HomeFragment : Fragment() {
         )
     }
 
-    private fun getLastLocation() {
-        if (checkPermission()) {
-            if (isLocationEnabled()) {
-
-                this.activity?.let {
-                    mFusedLocationProviderClient.lastLocation.addOnCompleteListener(it) { task ->
-                        val location: Location? = task.result
-                        if (location == null) {
-                            requestNewLocationData()
-                        } else {
-                            Toast.makeText(
-                                this.context,
-                                "Latitude: ${location.latitude}, Longitude: ${location.longitude}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                }
-            } else {
-                Toast.makeText(this.context, "Turn on location", Toast.LENGTH_LONG).show()
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                startActivity(intent)
-            }
-        } else {
-            requestPermission()
-        }
-    }
-
-    private fun requestNewLocationData() {
-        val mLocationRequest = LocationRequest()
-        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        mLocationRequest.interval = 10000
-        mLocationRequest.fastestInterval = 5000
-
-        this.activity?.let {
-            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(it)
-            mFusedLocationProviderClient!!.requestLocationUpdates(
-                mLocationRequest, mLocationCallback,
-                Looper.myLooper()
-            )
-        }
-    }
-
-    private val mLocationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            val mLastLocation: Location = locationResult.lastLocation
-            showMessage("Latitude: ${mLastLocation.latitude}, Longitude: ${mLastLocation.longitude}")
-        }
-    }
-
-    fun showMessage(msg: String) {
+    private fun showMessage(msg: String) {
         Toast.makeText(this.context, msg, Toast.LENGTH_SHORT).show()
     }
 
@@ -164,10 +130,23 @@ class HomeFragment : Fragment() {
     ) {
         if (requestCode == LOCATION_PERMISSION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                getLastLocation()
+                getDataFromViewModel()
+            } else {
+                ViewsImplementation.showAlertDialog(
+                    this.context!!,
+                    "Location Permission",
+                    "Please grant location permission in settings to use the app",
+                    dialogOnClickListener
+                )
             }
         }
     }
+
+    private val dialogOnClickListener =
+        DialogInterface.OnClickListener() { _: DialogInterface, _: Int ->
+            activity?.finish()
+            exitProcess(0)
+        }
 
     private fun updateViews(weatherData: WeatherData) {
         val currentWeather = weatherData.currentWeatherModel

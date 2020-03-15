@@ -1,13 +1,17 @@
 package com.example.weatherinfo.repository
 
+import android.location.Location
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.data.NetworkData
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
+import com.google.android.gms.location.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -15,12 +19,71 @@ import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-class WeatherRepository @Inject constructor(private val networkData: NetworkData) {
-
+class WeatherRepository @Inject constructor(
+    private val networkData: NetworkData,
+    private val application: MyApplication
+) {
+    private var mFusedLocationProviderClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(application)
     private val disposable: CompositeDisposable? = CompositeDisposable()
 
+    init {
+        loadData()
+    }
+    private fun requestNewLocationData() {
+        val mLocationRequest = LocationRequest()
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.interval = 10000
+        mLocationRequest.fastestInterval = 5000
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(application)
+        mFusedLocationProviderClient!!.requestLocationUpdates(
+            mLocationRequest, mLocationCallback,
+            Looper.myLooper()
+        )
+
+    }
+
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            val mLastLocation: Location = locationResult.lastLocation
+            val weatherRequestData = WeatherRequestData(
+                latitude = mLastLocation.latitude.toString(),
+                longitude = mLastLocation.longitude.toString(), metric = "metric",
+                key = "553c6868e55911a25016bd12138e0974"
+            )
+            networkLaunch(weatherRequestData)
+        }
+    }
     private val weatherDataMutable = MutableLiveData<WeatherData>()
-    fun loadData(weatherRequestData: WeatherRequestData): MutableLiveData<WeatherData> {
+    val weatherData: LiveData<WeatherData>
+        get() = weatherDataMutable
+
+    private val errorMutable = MutableLiveData<Throwable>()
+    val error: LiveData<Throwable>
+        get() = errorMutable
+
+
+    private fun loadData() {
+
+        mFusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
+            val location: Location? = task.result
+            if (location == null) {
+                requestNewLocationData()
+            } else {
+                val weatherRequestData = WeatherRequestData(
+                    latitude = location.latitude.toString(),
+                    longitude = location.longitude.toString(), metric = "metric",
+                    key = "553c6868e55911a25016bd12138e0974"
+                )
+                networkLaunch(weatherRequestData)
+            }
+
+        }
+
+
+    }
+
+    private fun networkLaunch(weatherRequestData: WeatherRequestData){
         val current = networkData.getCurrentWeather(
             weatherRequestData.latitude,
             weatherRequestData.longitude,
@@ -52,15 +115,7 @@ class WeatherRepository @Inject constructor(private val networkData: NetworkData
                         val weatherData = WeatherData(it.first, it.second)
                         weatherDataMutable.postValue(weatherData)
                     },
-                    { this.showError(it) })
+                    { errorMutable.postValue(it) })
         )
-        return weatherDataMutable
-    }
-
-    private fun getData(currentWeatherModel: CurrentWeatherModel, forecastModel: ForecastModel) {
-    }
-
-    private fun showError(error: Throwable) {
-        Log.d("DrinkRepository", "Error: ${error.message}")
     }
 }
