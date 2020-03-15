@@ -1,6 +1,6 @@
 package com.example.weatherinfo.model.forecast
 
-data class Main(
+data class ForecastMain(
     val feels_like: Double,
     val grnd_level: Int,
     val humidity: Int,

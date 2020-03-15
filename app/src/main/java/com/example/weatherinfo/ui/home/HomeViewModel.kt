@@ -18,16 +18,11 @@ import com.google.android.gms.location.*
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
-    weatherRepository: WeatherRepository
+    private val weatherRepository: WeatherRepository
 ) :
     ViewModel() {
-
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
-    }
-    val text: LiveData<String> = _text
-
-    val weatherData: LiveData<WeatherData> = weatherRepository.weatherData
-    val networkError: LiveData<Throwable> = weatherRepository.error
-
+    val weatherDbData: LiveData<WeatherData>
+        get() = weatherRepository.weatherData
+    val networkError: LiveData<Throwable>
+        get() = weatherRepository.error
 }

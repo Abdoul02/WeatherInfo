@@ -1,5 +1,5 @@
 package com.example.weatherinfo.model.forecast
 
-data class Clouds(
+data class ForecastClouds(
     val all: Int
 )

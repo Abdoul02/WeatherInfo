@@ -1,12 +1,17 @@
 package com.example.weatherinfo.repository
 
+import android.content.Context
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.data.NetworkData
+import com.example.weatherinfo.data.dao.WeatherDataDao
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
@@ -17,19 +22,26 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import other.ReusableData
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(
     private val networkData: NetworkData,
-    private val application: MyApplication
+    private val application: MyApplication,
+    private val weatherDataDao: WeatherDataDao
 ) {
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
     private val disposable: CompositeDisposable? = CompositeDisposable()
 
     init {
+        clearTables()
         loadData()
     }
+
     private fun requestNewLocationData() {
         val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -56,15 +68,30 @@ class WeatherRepository @Inject constructor(
     }
     private val weatherDataMutable = MutableLiveData<WeatherData>()
     val weatherData: LiveData<WeatherData>
-        get() = weatherDataMutable
+        get() = getDbWeatherData()
 
     private val errorMutable = MutableLiveData<Throwable>()
     val error: LiveData<Throwable>
         get() = errorMutable
 
+    private fun insertWeatherData(weatherData: WeatherData) {
+        GlobalScope.launch(Dispatchers.IO) {
+            weatherDataDao.insert(weatherData)
+        }
+    }
+
+    private fun clearTables() {
+        Log.d("insertWeatherData", "Clearing Data...")
+        GlobalScope.launch(Dispatchers.IO) {
+            weatherDataDao.clearTable()
+        }
+    }
+
+    private fun getDbWeatherData(): LiveData<WeatherData> {
+        return weatherDataDao.getWeatherData()
+    }
 
     private fun loadData() {
-
         mFusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
             val location: Location? = task.result
             if (location == null) {
@@ -79,11 +106,9 @@ class WeatherRepository @Inject constructor(
             }
 
         }
-
-
     }
 
-    private fun networkLaunch(weatherRequestData: WeatherRequestData){
+    private fun networkLaunch(weatherRequestData: WeatherRequestData) {
         val current = networkData.getCurrentWeather(
             weatherRequestData.latitude,
             weatherRequestData.longitude,
@@ -113,7 +138,7 @@ class WeatherRepository @Inject constructor(
                     {
                         //this.getData(it.first, it.second)
                         val weatherData = WeatherData(it.first, it.second)
-                        weatherDataMutable.postValue(weatherData)
+                        insertWeatherData(weatherData)
                     },
                     { errorMutable.postValue(it) })
         )
