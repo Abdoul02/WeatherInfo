@@ -1,12 +1,12 @@
 package com.example.weatherinfo.model.forecast
 
 data class ForecastDetail(
-    val clouds: Clouds,
+    val clouds: ForecastClouds,
     val dt: Int,
     val dt_txt: String,
-    val main: Main,
+    val main: ForecastMain,
     val rain: Rain?,
-    val sys: Sys,
-    val weather: List<Weather>,
-    val wind: Wind
+    val sys: ForecastSys,
+    val weather: List<ForecastWeather>,
+    val wind: ForecastWind
 )

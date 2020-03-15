@@ -1,5 +1,6 @@
 package com.example.weatherinfo.repository
 
+import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Looper
 import android.util.Log
@@ -7,21 +8,29 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.data.NetworkData
+import com.example.weatherinfo.data.dao.CurrentWeatherDao
+import com.example.weatherinfo.data.dao.ForecastDao
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
 import com.google.android.gms.location.*
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(
     private val networkData: NetworkData,
-    private val application: MyApplication
+    private val application: MyApplication,
+    private val currentWeatherDao: CurrentWeatherDao,
+    private val forecastDao: ForecastDao
 ) {
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
@@ -29,7 +38,9 @@ class WeatherRepository @Inject constructor(
 
     init {
         loadData()
+        // getDataFromDb()
     }
+
     private fun requestNewLocationData() {
         val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -56,12 +67,63 @@ class WeatherRepository @Inject constructor(
     }
     private val weatherDataMutable = MutableLiveData<WeatherData>()
     val weatherData: LiveData<WeatherData>
-        get() = weatherDataMutable
+        get() = getDataFromDb()
 
     private val errorMutable = MutableLiveData<Throwable>()
     val error: LiveData<Throwable>
         get() = errorMutable
 
+    private fun insertWeatherData(
+        currentWeatherModel: CurrentWeatherModel,
+        forecastModel: ForecastModel
+    ) {
+        Log.d("insertWeatherData", "Inserting Data...")
+        GlobalScope.launch(Dispatchers.IO) {
+            currentWeatherDao.insert(currentWeatherModel)
+            forecastDao.insert(forecastModel)
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private fun getDataFromDb(): LiveData<WeatherData> {
+        val currentWeather = Observable.fromCallable {
+            getCurrentWeather()
+        }
+        val forecastWeather = Observable.fromCallable { getForecastWeather() }
+
+        Observable.zip(
+            currentWeather,
+            forecastWeather,
+            BiFunction<CurrentWeatherModel, ForecastModel, Pair<CurrentWeatherModel, ForecastModel>> { t1, t2 ->
+                Pair(t1, t2)
+            }).subscribeOn(Schedulers.io())
+            .subscribe({
+                val weatherData = WeatherData(it.first, it.second)
+                weatherDataMutable.postValue(weatherData)
+            }, {})
+        return weatherDataMutable
+    }
+
+    private fun clearTables() {
+        GlobalScope.launch(Dispatchers.IO) {
+            currentWeatherDao.clearTable()
+            forecastDao.clearTable()
+        }
+    }
+
+    private fun getCurrentWeather(): CurrentWeatherModel {
+        return currentWeatherDao.getCurrentWeather()
+    }
+
+/*    private fun insertForecast(forecastModel: ForecastModel) {
+        GlobalScope.launch(Dispatchers.IO) {
+            forecastDao.insert(forecastModel)
+        }
+    }*/
+
+    private fun getForecastWeather(): ForecastModel {
+        return forecastDao.getForecastWeather()
+    }
 
     private fun loadData() {
 
@@ -83,7 +145,7 @@ class WeatherRepository @Inject constructor(
 
     }
 
-    private fun networkLaunch(weatherRequestData: WeatherRequestData){
+    private fun networkLaunch(weatherRequestData: WeatherRequestData) {
         val current = networkData.getCurrentWeather(
             weatherRequestData.latitude,
             weatherRequestData.longitude,
@@ -112,8 +174,8 @@ class WeatherRepository @Inject constructor(
                 .subscribe(
                     {
                         //this.getData(it.first, it.second)
-                        val weatherData = WeatherData(it.first, it.second)
-                        weatherDataMutable.postValue(weatherData)
+                        clearTables()
+                        insertWeatherData(it.first, it.second)
                     },
                     { errorMutable.postValue(it) })
         )
