@@ -23,13 +23,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
 import com.example.weatherinfo.model.UserLocation
-import other.ReusableData
+import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.enums.WeatherTypes
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_home.*
-import other.ForecastAdapter
+import com.example.weatherinfo.other.ForecastAdapter
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -154,7 +154,6 @@ class HomeFragment : Fragment() {
     private fun updateViews(weatherData: WeatherData) {
         val currentWeather = weatherData.currentWeatherModel
         val forecast = weatherData.forecastModel
-        Log.d("RecycleView", "List: ${forecast.list.size}")
         forecastAdapter.setData(forecast.list)
 
         if (!currentWeather.weather.isNullOrEmpty()) {

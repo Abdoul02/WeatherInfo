@@ -1,6 +1,5 @@
 package com.example.weatherinfo
 
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.Window
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_favorite, R.id.nav_slideshow
+                R.id.nav_home, R.id.nav_slideshow1, R.id.nav_favorite
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

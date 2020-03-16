@@ -1,4 +1,4 @@
-package other
+package com.example.weatherinfo.other
 
 import androidx.room.TypeConverter
 import com.example.weatherinfo.model.currentWeather.*

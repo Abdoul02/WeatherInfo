@@ -7,7 +7,7 @@ import com.example.weatherinfo.data.dao.LocationDao
 import com.example.weatherinfo.data.dao.WeatherDataDao
 import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.model.WeatherData
-import other.Converters
+import com.example.weatherinfo.other.Converters
 
 @Database(
     entities = [WeatherData::class, UserLocation::class],

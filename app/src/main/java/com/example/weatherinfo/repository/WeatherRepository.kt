@@ -1,10 +1,6 @@
 package com.example.weatherinfo.repository
 
-import android.content.Context
 import android.location.Location
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -27,7 +23,6 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import other.ReusableData
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(

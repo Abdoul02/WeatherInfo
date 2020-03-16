@@ -30,14 +30,14 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_favorite"
+        android:id="@+id/nav_slideshow1"
         android:name="com.example.weatherinfo.ui.gallery.GalleryFragment"
         android:label="@string/menu_favorite"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_favorite"
         android:name="com.example.weatherinfo.ui.favorite.FavoriteFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:label="@string/menu_favorite"
+        tools:layout="@layout/fragment_favorite" />
 </navigation>

@@ -1,11 +1,10 @@
-package other
+package com.example.weatherinfo.other
 
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.view.View
 
 object ReusableData {
 

@@ -15,6 +15,12 @@
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
+    <style name="RecycleViewTheme" parent="android:TextAppearance">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">@dimen/recycle_view_medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="AppTheme.Transparent" parent="ThemeOverlay.AppCompat.Light">
         <item name="colorPrimary">@android:color/transparent</item>
         <item name="android:textColorPrimary">@android:color/white</item>
