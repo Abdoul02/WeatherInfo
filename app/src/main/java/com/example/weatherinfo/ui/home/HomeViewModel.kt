@@ -11,6 +11,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.weatherinfo.MyApplication
+import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.repository.WeatherRepository
@@ -19,10 +20,14 @@ import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
     private val weatherRepository: WeatherRepository
-) :
-    ViewModel() {
+) : ViewModel() {
+
     val weatherDbData: LiveData<WeatherData>
         get() = weatherRepository.weatherData
     val networkError: LiveData<Throwable>
         get() = weatherRepository.error
+
+    fun insertLocation(userLocation: UserLocation) {
+        weatherRepository.insertLocation(userLocation)
+    }
 }

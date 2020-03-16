@@ -11,7 +11,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.data.NetworkData
+import com.example.weatherinfo.data.dao.LocationDao
 import com.example.weatherinfo.data.dao.WeatherDataDao
+import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
@@ -31,7 +33,8 @@ import javax.inject.Inject
 class WeatherRepository @Inject constructor(
     private val networkData: NetworkData,
     private val application: MyApplication,
-    private val weatherDataDao: WeatherDataDao
+    private val weatherDataDao: WeatherDataDao,
+    private val locationDao: LocationDao
 ) {
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
@@ -78,6 +81,16 @@ class WeatherRepository @Inject constructor(
         GlobalScope.launch(Dispatchers.IO) {
             weatherDataDao.insert(weatherData)
         }
+    }
+
+    fun insertLocation(userLocation: UserLocation) {
+        GlobalScope.launch {
+            locationDao.insertLocation(userLocation)
+        }
+    }
+
+    fun getLocations(): LiveData<List<UserLocation>> {
+        return locationDao.getLocations()
     }
 
     private fun clearTables() {

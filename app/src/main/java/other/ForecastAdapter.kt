@@ -55,6 +55,7 @@ class ForecastAdapter(private val context: Context) :
     }
 
     fun setData(forecastData: List<ForecastDetail>) {
+        if(data.isNotEmpty()) data.clear()
         this.data.addAll(filteredForecastDetail(forecastData))
         notifyDataSetChanged()
     }

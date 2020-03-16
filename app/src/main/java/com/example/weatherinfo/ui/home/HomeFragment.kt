@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
+import com.example.weatherinfo.model.UserLocation
 import other.ReusableData
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.enums.WeatherTypes
@@ -69,6 +71,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getDataFromViewModel() {
+
         if (isLocationEnabled()) {
             activity?.let {
                 (it.application as MyApplication).get(it).getApplicationComponent()
@@ -151,6 +154,7 @@ class HomeFragment : Fragment() {
     private fun updateViews(weatherData: WeatherData) {
         val currentWeather = weatherData.currentWeatherModel
         val forecast = weatherData.forecastModel
+        Log.d("RecycleView", "List: ${forecast.list.size}")
         forecastAdapter.setData(forecast.list)
 
         if (!currentWeather.weather.isNullOrEmpty()) {
@@ -181,12 +185,15 @@ class HomeFragment : Fragment() {
                 "\u2103"
             )
         }
-        favouriteFab.setOnClickListener { view ->
-            Snackbar.make(
-                view,
-                "Location: ${currentWeather.coord.lat}, ${currentWeather.coord.lon}",
-                Snackbar.LENGTH_LONG
+        addFavoriteFab.setOnClickListener { view ->
+            val userLocation = UserLocation(
+                currentWeather.id,
+                currentWeather.coord.lat,
+                currentWeather.coord.lon,
+                currentWeather.name
             )
+            homeViewModel.insertLocation(userLocation)
+            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
 
