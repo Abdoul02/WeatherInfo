@@ -8,7 +8,9 @@ import com.example.weatherinfo.di.module.RetrofitModule
 import com.example.weatherinfo.di.qualifier.ApplicationContext
 import com.example.weatherinfo.di.scope.ApplicationScope
 import com.example.weatherinfo.network.ApiInterface
+import com.example.weatherinfo.ui.favorite.FavoriteFragment
 import com.example.weatherinfo.ui.home.HomeFragment
+import com.example.weatherinfo.ui.places.PlacesFragment
 import dagger.Component
 
 @ApplicationScope
@@ -21,4 +23,6 @@ interface ApplicationComponent {
     fun getContext(): Context?
 
     fun injectApplication(homeFragment: HomeFragment)
+    fun injectFavoriteFragment(favoriteFragment: FavoriteFragment)
+    fun injectPlaceFragment(placesFragment: PlacesFragment)
 }

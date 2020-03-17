@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,13 +22,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
-import other.ReusableData
+import com.example.weatherinfo.model.UserLocation
+import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.enums.WeatherTypes
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_home.*
-import other.ForecastAdapter
+import com.example.weatherinfo.other.ForecastAdapter
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -69,6 +71,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getDataFromViewModel() {
+
         if (isLocationEnabled()) {
             activity?.let {
                 (it.application as MyApplication).get(it).getApplicationComponent()
@@ -181,13 +184,17 @@ class HomeFragment : Fragment() {
                 "\u2103"
             )
         }
-        favouriteFab.setOnClickListener { view ->
-            Snackbar.make(
-                view,
-                "Location: ${currentWeather.coord.lat}, ${currentWeather.coord.lon}",
-                Snackbar.LENGTH_LONG
+        addFavoriteFab.setOnClickListener { view ->
+            val userLocation = UserLocation(
+                currentWeather.id,
+                currentWeather.coord.lat,
+                currentWeather.coord.lon,
+                currentWeather.name
             )
-                .setAction("Action", null).show()
+
+            val loc = UserLocation(100,-26.140499438 ,28.037666516,"Rosebank")
+            homeViewModel.insertLocation(loc)
+            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG).show()
         }
 
     }

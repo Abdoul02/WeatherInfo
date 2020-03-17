@@ -1,4 +1,4 @@
-package other
+package com.example.weatherinfo.other
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -11,10 +11,6 @@ import com.example.weatherinfo.R
 import com.example.weatherinfo.model.enums.WeatherTypes
 import com.example.weatherinfo.model.forecast.ForecastDetail
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -55,6 +51,7 @@ class ForecastAdapter(private val context: Context) :
     }
 
     fun setData(forecastData: List<ForecastDetail>) {
+        if(data.isNotEmpty()) data.clear()
         this.data.addAll(filteredForecastDetail(forecastData))
         notifyDataSetChanged()
     }

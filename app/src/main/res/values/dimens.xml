@@ -8,5 +8,7 @@
 
     <dimen name="font_size_large">60sp</dimen>
     <dimen name="font_size_medium">30sp</dimen>
-    <dimen name="font_size_small">16sp</dimen>
+    <dimen name="font_size_small">20sp</dimen>
+
+    <dimen name="recycle_view_medium">18sp</dimen>
 </resources>

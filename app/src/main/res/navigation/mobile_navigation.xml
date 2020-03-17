@@ -30,14 +30,37 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_slideshow1"
         android:name="com.example.weatherinfo.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
+        android:label="@string/menu_favorite"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_favorite"
         android:name="com.example.weatherinfo.ui.favorite.FavoriteFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:label="@string/menu_favorite"
+        tools:layout="@layout/fragment_favorite" >
+        <action
+            android:id="@+id/avorite_to_places"
+            app:destination="@id/placesFragment" />
+        <action
+            android:id="@+id/favorite_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/placesFragment"
+        android:name="com.example.weatherinfo.ui.places.PlacesFragment"
+        android:label="PlacesFragment" >
+        <argument
+            android:name="latitude"
+            app:argType="string" />
+        <argument
+            android:name="longitude"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.weatherinfo.GoogleMapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" />
 </navigation>
