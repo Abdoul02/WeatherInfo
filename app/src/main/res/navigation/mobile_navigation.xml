@@ -57,6 +57,9 @@
         <argument
             android:name="longitude"
             app:argType="string" />
+        <action
+            android:id="@+id/action_placesFragment_to_nav_favorite"
+            app:destination="@id/nav_favorite" />
     </fragment>
     <fragment
         android:id="@+id/mapFragment"

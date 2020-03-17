@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -30,6 +31,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_home.*
 import com.example.weatherinfo.other.ForecastAdapter
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -41,6 +44,7 @@ class HomeFragment : Fragment() {
     private lateinit var forecastAdapter: ForecastAdapter
     lateinit var forecastRecycleView: RecyclerView
     lateinit var addFavoriteFab: FloatingActionButton
+    lateinit var tvLastUpdated: TextView
 
     private val LOCATION_PERMISSION = 101
 
@@ -56,6 +60,7 @@ class HomeFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         forecastRecycleView = root.findViewById(R.id.forecastRecycleView)
         addFavoriteFab = root.findViewById(R.id.favouriteFab)
+        tvLastUpdated = root.findViewById(R.id.tvLastUpdated)
         this.context?.let { mContext ->
             forecastAdapter = ForecastAdapter(mContext)
             forecastRecycleView.layoutManager = LinearLayoutManager(mContext)
@@ -151,6 +156,7 @@ class HomeFragment : Fragment() {
             exitProcess(0)
         }
 
+
     private fun updateViews(weatherData: WeatherData) {
         val currentWeather = weatherData.currentWeatherModel
         val forecast = weatherData.forecastModel
@@ -168,6 +174,15 @@ class HomeFragment : Fragment() {
                     "\u2103"
                 )
             tvTemperatureDetail.text = currentWeather.weather[0].main
+            this.context?.let {
+                if (!ReusableData.isOnline(it)) {
+                    tvLastUpdated.visibility = View.VISIBLE
+                    tvLastUpdated.text =
+                        it.getString(R.string.last_updated, getDate(currentWeather.dt.toLong()))
+                    Snackbar.make(addFavoriteFab, "Network error, last saved weather displayed", Snackbar.LENGTH_LONG)
+                        .show()
+                }
+            }
             tvMinTemp.text = getString(
                 R.string.current_min_temp,
                 currentWeather.main.temp_min.toInt().toString(),
@@ -184,6 +199,15 @@ class HomeFragment : Fragment() {
                 "\u2103"
             )
         }
+
+        if(currentWeather.weather.isNullOrEmpty() && ! ReusableData.isOnline(this.context!!)){
+            ReusableData.showAlertDialog(
+                this.context!!,
+                "Network Error",
+                "Network error, please connect to internet",
+                dialogOnClickListener
+            )
+        }
         addFavoriteFab.setOnClickListener { view ->
             val userLocation = UserLocation(
                 currentWeather.id,
@@ -192,11 +216,19 @@ class HomeFragment : Fragment() {
                 currentWeather.name
             )
 
-            val loc = UserLocation(100,-26.140499438 ,28.037666516,"Rosebank")
-            homeViewModel.insertLocation(loc)
-            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG).show()
+           // val loc = UserLocation(100, -26.140499438, 28.037666516, "Rosebank") //Test
+            homeViewModel.insertLocation(userLocation)
+            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG)
+                .show()
         }
 
+    }
+
+    private fun getDate(milliSeconds: Long): String {
+        val formatter = SimpleDateFormat("dd-MM-yyyy hh:mm:ss", Locale.UK)
+        val calender = Calendar.getInstance()
+        calender.timeInMillis = milliSeconds
+        return formatter.format(calender.time)
     }
 
     private fun updateBackground(weatherType: String) {

@@ -1,5 +1,6 @@
 package com.example.weatherinfo.ui.places
 
+import android.content.DialogInterface
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +19,7 @@ import com.example.weatherinfo.model.places.PlacesResponse
 import com.example.weatherinfo.other.ReusableData
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 class PlacesFragment : Fragment() {
 
@@ -69,20 +71,43 @@ class PlacesFragment : Fragment() {
     private fun displayInfo(placesResponse: PlacesResponse) {
 
 
-        if (placesResponse.results.isNotEmpty()) {
-            val result = placesResponse.results[0]
-            val picasso = Picasso.get()
-            //picasso.load(result).into(holder.imgBeer)
-            tvName.text = this.getString(R.string.place_name, result.name)
-            tvOpen.text = if (result.opening_hours.open_now) this.getString(
-                R.string.place_open,
-                "YES"
-            ) else this.getString(R.string.place_open, "NO")
-            tvRate.text = result.rating.toString()
-            tvType.text = result.types.toString()
+        if (!ReusableData.isOnline(this.context!!)) {
+            ReusableData.showAlertDialog(
+                this.context!!,
+                "Network Error",
+                "Please connect to the internet and try again",
+                dialogOnClickListener
+            )
         } else {
-
+            if (placesResponse.results.isNotEmpty()) {
+                val result = placesResponse.results[0]
+                val picasso = Picasso.get()
+                //picasso.load(result.).into(imgPhoto)
+                tvName.text = this.getString(R.string.place_name, result.name)
+                tvOpen.text = if (result.opening_hours.open_now) this.getString(
+                    R.string.place_open,
+                    "YES"
+                ) else this.getString(R.string.place_open, "NO")
+                tvRate.text = this.getString(R.string.place_rating, result.rating.toString())
+                tvType.text = this.getString(R.string.place_type, getTypeList(result.types))
+            } else {
+                ReusableData.showAlertDialog(
+                    this.context!!,
+                    "Location Error",
+                    "An error occurred Please try again later",
+                    dialogOnClickListener
+                )
+            }
         }
+
     }
 
+    private fun getTypeList(types: List<String>): String {
+        return types.joinToString(separator = ",")
+    }
+
+    private val dialogOnClickListener =
+        DialogInterface.OnClickListener() { _: DialogInterface, _: Int ->
+
+        }
 }
