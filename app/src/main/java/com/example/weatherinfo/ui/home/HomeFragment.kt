@@ -158,6 +158,7 @@ class HomeFragment : Fragment() {
 
 
     private fun updateViews(weatherData: WeatherData) {
+
         val currentWeather = weatherData.currentWeatherModel
         val forecast = weatherData.forecastModel
         forecastAdapter.setData(forecast.list)
@@ -179,7 +180,11 @@ class HomeFragment : Fragment() {
                     tvLastUpdated.visibility = View.VISIBLE
                     tvLastUpdated.text =
                         it.getString(R.string.last_updated, getDate(currentWeather.dt.toLong()))
-                    Snackbar.make(addFavoriteFab, "Network error, last saved weather displayed", Snackbar.LENGTH_LONG)
+                    Snackbar.make(
+                        addFavoriteFab,
+                        "Network error, last saved weather displayed",
+                        Snackbar.LENGTH_LONG
+                    )
                         .show()
                 }
             }
@@ -198,15 +203,16 @@ class HomeFragment : Fragment() {
                 currentWeather.main.temp_max.toInt().toString(),
                 "\u2103"
             )
-        }
-
-        if(currentWeather.weather.isNullOrEmpty() && ! ReusableData.isOnline(this.context!!)){
-            ReusableData.showAlertDialog(
-                this.context!!,
-                "Network Error",
-                "Network error, please connect to internet",
-                dialogOnClickListener
-            )
+        } else {
+            if (!ReusableData.isOnline(this.context!!)) {
+                clProgress.visibility = View.GONE
+                ReusableData.showAlertDialog(
+                    this.context!!,
+                    "Network Error",
+                    "Network error, please connect to internet",
+                    dialogOnClickListener
+                )
+            }
         }
         addFavoriteFab.setOnClickListener { view ->
             val userLocation = UserLocation(
@@ -216,7 +222,7 @@ class HomeFragment : Fragment() {
                 currentWeather.name
             )
 
-           // val loc = UserLocation(100, -26.140499438, 28.037666516, "Rosebank") //Test
+            // val loc = UserLocation(101, -26.107567,28.056702, "Sandton") //Test
             homeViewModel.insertLocation(userLocation)
             Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG)
                 .show()
