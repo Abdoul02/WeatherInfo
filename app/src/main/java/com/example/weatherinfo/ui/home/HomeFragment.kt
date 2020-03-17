@@ -191,7 +191,9 @@ class HomeFragment : Fragment() {
                 currentWeather.coord.lon,
                 currentWeather.name
             )
-            homeViewModel.insertLocation(userLocation)
+
+            val loc = UserLocation(100,-26.140499438 ,28.037666516,"Rosebank")
+            homeViewModel.insertLocation(loc)
             Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG).show()
         }
 
