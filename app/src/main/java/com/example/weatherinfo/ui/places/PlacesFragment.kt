@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherinfo.MyApplication
@@ -32,6 +33,8 @@ class PlacesFragment : Fragment() {
     lateinit var tvRate: TextView
     lateinit var tvType: TextView
     lateinit var tvOpen: TextView
+    lateinit var clMain: ConstraintLayout
+    lateinit var clInfo: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +46,8 @@ class PlacesFragment : Fragment() {
         tvRate = root.findViewById(R.id.tvPlaceRate)
         tvType = root.findViewById(R.id.tvPlaceType)
         tvOpen = root.findViewById(R.id.tvPlaceOpen)
+        clMain = root.findViewById(R.id.mainCLayout)
+        clInfo = root.findViewById(R.id.clPlaceInfo)
         return root
     }
 
@@ -80,6 +85,8 @@ class PlacesFragment : Fragment() {
             )
         } else {
             if (placesResponse.results.isNotEmpty()) {
+                clMain.visibility = View.VISIBLE
+                clInfo.visibility = View.GONE
                 val result = placesResponse.results[0]
                 val picasso = Picasso.get()
                 //picasso.load(result.).into(imgPhoto)
@@ -108,6 +115,6 @@ class PlacesFragment : Fragment() {
 
     private val dialogOnClickListener =
         DialogInterface.OnClickListener() { _: DialogInterface, _: Int ->
-
+            //cancel
         }
 }
