@@ -14,7 +14,12 @@ import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
+import com.example.weatherinfo.model.places.PlacesResponse
+import com.example.weatherinfo.other.ReusableData
+import com.example.weatherinfo.other.ReusableData.WEATHER_API_KEY
+import com.example.weatherinfo.other.ReusableData.WEATHER_UNIT
 import com.google.android.gms.location.*
+import dagger.Reusable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -34,10 +39,13 @@ class WeatherRepository @Inject constructor(
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
     private val disposable: CompositeDisposable? = CompositeDisposable()
+    private val placesDisposable: CompositeDisposable? = CompositeDisposable()
 
     init {
-        clearTables()
-        loadData()
+        if (ReusableData.isOnline(application)) {
+            clearTables()
+            loadData()
+        }
     }
 
     private fun requestNewLocationData() {
@@ -58,19 +66,22 @@ class WeatherRepository @Inject constructor(
             val mLastLocation: Location = locationResult.lastLocation
             val weatherRequestData = WeatherRequestData(
                 latitude = mLastLocation.latitude.toString(),
-                longitude = mLastLocation.longitude.toString(), metric = "metric",
-                key = "553c6868e55911a25016bd12138e0974"
+                longitude = mLastLocation.longitude.toString(), metric = WEATHER_UNIT,
+                key = WEATHER_API_KEY
             )
             networkLaunch(weatherRequestData)
         }
     }
-    private val weatherDataMutable = MutableLiveData<WeatherData>()
     val weatherData: LiveData<WeatherData>
         get() = getDbWeatherData()
 
     private val errorMutable = MutableLiveData<Throwable>()
     val error: LiveData<Throwable>
         get() = errorMutable
+
+    private val placesMutable = MutableLiveData<PlacesResponse>()
+    private val placesErrorMutable = MutableLiveData<Throwable>()
+
 
     private fun insertWeatherData(weatherData: WeatherData) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -107,13 +118,33 @@ class WeatherRepository @Inject constructor(
             } else {
                 val weatherRequestData = WeatherRequestData(
                     latitude = location.latitude.toString(),
-                    longitude = location.longitude.toString(), metric = "metric",
-                    key = "553c6868e55911a25016bd12138e0974"
+                    longitude = location.longitude.toString(), metric = WEATHER_UNIT,
+                    key = WEATHER_API_KEY
                 )
                 networkLaunch(weatherRequestData)
             }
 
         }
+    }
+
+    fun getLocationInfo(
+        url: String,
+        location: String,
+        radius: Int,
+        type: String,
+        key: String
+    ): MutableLiveData<PlacesResponse> {
+        placesDisposable?.add(
+            networkData.getLocationInformation(url, location, type, radius, key)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe({ placesMutable.postValue(it) }, { handlePlacesError(it) })
+        )
+        return placesMutable
+    }
+
+    private fun handlePlacesError(error: Throwable) {
+        placesErrorMutable.postValue(error)
     }
 
     private fun networkLaunch(weatherRequestData: WeatherRequestData) {

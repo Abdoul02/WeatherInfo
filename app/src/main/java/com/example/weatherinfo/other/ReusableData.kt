@@ -8,6 +8,13 @@ import android.net.NetworkCapabilities
 
 object ReusableData {
 
+    const val WEATHER_API_KEY = "553c6868e55911a25016bd12138e0974"
+    const val WEATHER_UNIT = "metric"
+    const val PLACES_API_KEY = "AIzaSyCVkcik_E3WcjxYBELZfXa1zPzu2Nw-dus"
+    const val PLACE_TYPE = "restaurant"
+    const val RADIUS = 1500
+    const val PLACE_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+
     fun showAlertDialog(
         context: Context,
         title: String,

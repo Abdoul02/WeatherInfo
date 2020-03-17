@@ -1,5 +1,6 @@
 package com.example.weatherinfo.ui.favorite
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,13 +9,15 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
-import com.example.weatherinfo.di.component.FavoriteFragmentComponent
 import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.other.LocationListAdapter
+import com.example.weatherinfo.ui.MapsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import javax.inject.Inject
 
@@ -70,11 +73,25 @@ class FavoriteFragment : Fragment() {
         locationListAdapter.setOnItemClickListener(object :
             LocationListAdapter.OnItemClickListener {
             override fun onItemClick(userLocation: UserLocation, view: View) {
-                //Go to Details
+                view.findNavController().navigate(
+                    FavoriteFragmentDirections.avoriteToPlaces(
+                        userLocation.latitude.toString(),
+                        userLocation.longitude.toString()
+                    )
+                )
             }
         })
         mapFab.setOnClickListener {
-            //Display Map with data
+            activity?.let {
+                val intent = Intent(it, MapsActivity::class.java)
+                val locationBundle = Bundle()
+                val listOfLocation = ArrayList(locations)
+                locationBundle.putParcelableArrayList("locationList", listOfLocation)
+                intent.putExtras(locationBundle)
+                it.startActivity(intent)
+            }
+
+            //it.findNavController().navigate(FavoriteFragmentDirections.favoriteToMapFragment())
         }
     }
 }

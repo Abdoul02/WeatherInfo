@@ -192,8 +192,7 @@ class HomeFragment : Fragment() {
                 currentWeather.name
             )
             homeViewModel.insertLocation(userLocation)
-            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG).show()
         }
 
     }
