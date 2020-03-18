@@ -54,7 +54,7 @@ class WeatherRepository @Inject constructor(
         mLocationRequest.interval = 10000
         mLocationRequest.fastestInterval = 5000
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(application)
-        mFusedLocationProviderClient!!.requestLocationUpdates(
+        mFusedLocationProviderClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.myLooper()
         )

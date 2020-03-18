@@ -90,7 +90,7 @@ class HomeFragment : Fragment() {
             })
 
         } else {
-            showMessage("Turn on location")
+            showMessage("Please turn on location")
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         }
