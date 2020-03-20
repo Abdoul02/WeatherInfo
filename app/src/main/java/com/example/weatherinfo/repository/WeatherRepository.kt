@@ -58,7 +58,6 @@ class WeatherRepository @Inject constructor(
             mLocationRequest, mLocationCallback,
             Looper.myLooper()
         )
-
     }
 
     private val mLocationCallback = object : LocationCallback() {

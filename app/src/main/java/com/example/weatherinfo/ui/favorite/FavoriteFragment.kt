@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +16,7 @@ import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
 import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.other.LocationListAdapter
-import com.example.weatherinfo.ui.MapsActivity
+import com.example.weatherinfo.ui.map.MapsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import javax.inject.Inject
 

@@ -6,6 +6,7 @@ import com.example.weatherinfo.di.scope.ViewModelKey
 import com.example.weatherinfo.ui.ViewModelFactory
 import com.example.weatherinfo.ui.favorite.FavoriteViewModel
 import com.example.weatherinfo.ui.home.HomeViewModel
+import com.example.weatherinfo.ui.map.MapsViewModel
 import com.example.weatherinfo.ui.places.PlacesViewModel
 import dagger.Binds
 import dagger.Module
@@ -28,6 +29,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PlacesViewModel::class)
     abstract fun bindPlacesViewModel(placesViewModel: PlacesViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MapsViewModel::class)
+    abstract fun bindMapsViewModel(mapsViewModel: MapsViewModel): ViewModel
 
     @Binds
     abstract fun bindFactory(factory: ViewModelFactory): ViewModelProvider.Factory
