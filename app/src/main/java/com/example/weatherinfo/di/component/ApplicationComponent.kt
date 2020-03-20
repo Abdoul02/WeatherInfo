@@ -1,13 +1,11 @@
 package com.example.weatherinfo.di.component
 
 import android.content.Context
-import com.example.weatherinfo.di.module.ContextModule
-import com.example.weatherinfo.di.module.DatabaseModule
-import com.example.weatherinfo.di.module.MyApplicationModule
-import com.example.weatherinfo.di.module.RetrofitModule
+import com.example.weatherinfo.di.module.*
 import com.example.weatherinfo.di.qualifier.ApplicationContext
 import com.example.weatherinfo.di.scope.ApplicationScope
 import com.example.weatherinfo.network.ApiInterface
+import com.example.weatherinfo.ui.map.MapsActivity
 import com.example.weatherinfo.ui.favorite.FavoriteFragment
 import com.example.weatherinfo.ui.home.HomeFragment
 import com.example.weatherinfo.ui.places.PlacesFragment
@@ -25,4 +23,5 @@ interface ApplicationComponent {
     fun injectApplication(homeFragment: HomeFragment)
     fun injectFavoriteFragment(favoriteFragment: FavoriteFragment)
     fun injectPlaceFragment(placesFragment: PlacesFragment)
+    fun injectMapActivity(mapsActivity: MapsActivity)
 }

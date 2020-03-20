@@ -11,8 +11,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.weatherinfo.MyApplication
 
 import com.example.weatherinfo.R
@@ -53,28 +55,6 @@ class PlacesFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val locationArgs = PlacesFragmentArgs.fromBundle(arguments!!)
-        val location = "${locationArgs.latitude},${locationArgs.longitude}"
-        activity?.let {
-            (it.application as MyApplication).get(it).getApplicationComponent()
-                ?.injectPlaceFragment(this)
-        }
-        viewModel = ViewModelProvider(this, viewModelFactory).get(PlacesViewModel::class.java)
-        val placesData = viewModel.getPlaceInfo(
-            ReusableData.PLACE_URL,
-            location,
-            ReusableData.RADIUS,
-            ReusableData.PLACE_TYPE,
-            ReusableData.PLACES_API_KEY
-        )
-        placesData.observe(viewLifecycleOwner, Observer {
-            displayInfo(it)
-        })
-
-    }
-
-    private fun displayInfo(placesResponse: PlacesResponse) {
-
 
         if (!ReusableData.isOnline(this.context!!)) {
             ReusableData.showAlertDialog(
@@ -84,28 +64,51 @@ class PlacesFragment : Fragment() {
                 dialogOnClickListener
             )
         } else {
-            if (placesResponse.results.isNotEmpty()) {
-                clMain.visibility = View.VISIBLE
-                clInfo.visibility = View.GONE
-                val result = placesResponse.results[0]
-                val picasso = Picasso.get()
-                //picasso.load(result.).into(imgPhoto)
-                tvName.text = this.getString(R.string.place_name, result.name)
-                tvOpen.text = if (result.opening_hours.open_now) this.getString(
-                    R.string.place_open,
-                    "YES"
-                ) else this.getString(R.string.place_open, "NO")
-                tvRate.text = this.getString(R.string.place_rating, result.rating.toString())
-                tvType.text = this.getString(R.string.place_type, getTypeList(result.types))
-            } else {
-                ReusableData.showAlertDialog(
-                    this.context!!,
-                    "Location Error",
-                    "An error occurred Please try again later",
-                    dialogOnClickListener
-                )
+            val locationArgs = PlacesFragmentArgs.fromBundle(arguments!!)
+            val location = "${locationArgs.latitude},${locationArgs.longitude}"
+            activity?.let {
+                (it.application as MyApplication).get(it).getApplicationComponent()
+                    ?.injectPlaceFragment(this)
             }
+            viewModel = ViewModelProvider(this, viewModelFactory).get(PlacesViewModel::class.java)
+            val placesData = viewModel.getPlaceInfo(
+                ReusableData.PLACE_URL,
+                location,
+                ReusableData.RADIUS,
+                ReusableData.PLACE_TYPE,
+                ReusableData.PLACES_API_KEY
+            )
+            placesData.observe(viewLifecycleOwner, Observer {
+                displayInfo(it)
+            })
         }
+
+
+    }
+
+    private fun displayInfo(placesResponse: PlacesResponse) {
+        if (placesResponse.results.isNotEmpty()) {
+            clMain.visibility = View.VISIBLE
+            clInfo.visibility = View.GONE
+            val result = placesResponse.results[0]
+            val picasso = Picasso.get()
+            //picasso.load(result.).into(imgPhoto)
+            tvName.text = this.getString(R.string.place_name, result.name)
+            tvOpen.text = if (result.opening_hours.open_now) this.getString(
+                R.string.place_open,
+                "YES"
+            ) else this.getString(R.string.place_open, "NO")
+            tvRate.text = this.getString(R.string.place_rating, result.rating.toString())
+            tvType.text = this.getString(R.string.place_type, getTypeList(result.types))
+        } else {
+            ReusableData.showAlertDialog(
+                this.context!!,
+                "Location Error",
+                "An error occurred Please try again later",
+                dialogOnClickListener
+            )
+        }
+
 
     }
 
@@ -115,6 +118,6 @@ class PlacesFragment : Fragment() {
 
     private val dialogOnClickListener =
         DialogInterface.OnClickListener() { _: DialogInterface, _: Int ->
-            //cancel
+           findNavController().navigate(R.id.action_placesFragment_to_nav_favorite)
         }
 }
