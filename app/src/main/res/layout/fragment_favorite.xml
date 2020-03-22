@@ -21,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
+        android:layoutAnimation="@anim/layout_animation_right_to_left"
         tools:listitem="@layout/location_entry" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
