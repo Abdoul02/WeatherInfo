@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieAnimationView
 import com.example.weatherinfo.MyApplication
 
 import com.example.weatherinfo.R
@@ -33,6 +34,7 @@ class PlacesFragment : Fragment() {
     lateinit var tvOpen: TextView
     lateinit var clMain: ConstraintLayout
     lateinit var clInfo: ConstraintLayout
+    private lateinit var weatherAnimation: LottieAnimationView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +48,7 @@ class PlacesFragment : Fragment() {
         tvOpen = root.findViewById(R.id.tvPlaceOpen)
         clMain = root.findViewById(R.id.mainCLayout)
         clInfo = root.findViewById(R.id.clPlaceInfo)
+        weatherAnimation = root.findViewById(R.id.lottie_animation_weather)
         return root
     }
 
@@ -73,6 +76,8 @@ class PlacesFragment : Fragment() {
                 ReusableData.PLACE_TYPE,
                 ReusableData.PLACES_API_KEY
             )
+            weatherAnimation.repeatCount = 10
+            weatherAnimation.playAnimation()
             placesData.observe(viewLifecycleOwner, Observer {
                 displayInfo(it)
             })
@@ -86,6 +91,7 @@ class PlacesFragment : Fragment() {
         if (placesModel.placesResponse != null) {
 
             if (placesModel.placesResponse.status == "OK") {
+                weatherAnimation.cancelAnimation()
                 clMain.visibility = View.VISIBLE
                 clInfo.visibility = View.GONE
                 val result = placesModel.placesResponse.results.first()
