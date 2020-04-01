@@ -79,11 +79,6 @@ class WeatherRepository @Inject constructor(
     val error: LiveData<Throwable>
         get() = errorMutable
 
-    private val placesMutable = MutableLiveData<PlacesResponse>()
-    private val placesErrorMutable = MutableLiveData<Throwable>()
-    private val placeModelMutable = MutableLiveData<PlacesModel>()
-
-
     private fun insertWeatherData(weatherData: WeatherData) {
         GlobalScope.launch(Dispatchers.IO) {
             weatherDataDao.insert(weatherData)
@@ -126,29 +121,6 @@ class WeatherRepository @Inject constructor(
             }
 
         }
-    }
-
-    fun getLocationInfo(
-        url: String,
-        location: String,
-        radius: Int,
-        type: String,
-        key: String
-    ): MutableLiveData<PlacesModel> {
-        placesDisposable?.add(
-            networkData.getLocationInformation(url, location, type, radius, key)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe({
-                    val placeModel = PlacesModel(placesResponse = it)
-                    placeModelMutable.postValue(placeModel)
-                    //placesMutable.postValue(it)
-                }, {
-                    val placeModel = PlacesModel(error = it)
-                    placeModelMutable.postValue(placeModel)
-                })
-        )
-        return placeModelMutable
     }
 
     private fun networkLaunch(weatherRequestData: WeatherRequestData) {
