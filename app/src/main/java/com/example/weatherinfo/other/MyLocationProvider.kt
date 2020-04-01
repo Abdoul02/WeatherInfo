@@ -22,4 +22,12 @@ class MyLocationProvider @Inject constructor(@ApplicationContext context: Contex
         mLocationRequest.fastestInterval = 5000
         return mLocationRequest
     }
+
+    /*
+    //Get Address from Location
+    Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+ List<Address> addresses = geocoder.getFromLocation(MyLat, MyLong, 1);
+ String cityName = addresses.get(0).getAddressLine(0);
+ String stateName = addresses.get(0).getAddressLine(1);
+ String countryName = addresses.get(0).getAddressLine(2);*/
 }

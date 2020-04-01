@@ -18,7 +18,7 @@ object ReusableData {
     fun showAlertDialog(
         context: Context,
         title: String,
-        message: String,
+        message: String?,
         onClickListener: DialogInterface.OnClickListener
     ) {
         val builder = AlertDialog.Builder(context)

@@ -32,6 +32,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
 
         (this.application as MyApplication).getApplicationComponent()?.injectMapActivity(this)
         mapsViewModel = ViewModelProvider(this, viewModelFactory).get(MapsViewModel::class.java)

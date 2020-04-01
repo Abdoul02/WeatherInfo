@@ -29,7 +29,6 @@ class FavoriteFragment : Fragment() {
     private lateinit var locationListAdapter: LocationListAdapter
     private lateinit var mapFab: FloatingActionButton
     private lateinit var tvNoLocation: TextView
-    //lateinit var favoriteFragmentComponent: FavoriteFragmentComponent
 
     override fun onCreateView(
         inflater: LayoutInflater,

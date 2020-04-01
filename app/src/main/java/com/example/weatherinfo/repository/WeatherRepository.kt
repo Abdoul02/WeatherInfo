@@ -14,6 +14,7 @@ import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
+import com.example.weatherinfo.model.places.PlacesModel
 import com.example.weatherinfo.model.places.PlacesResponse
 import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.other.ReusableData.WEATHER_API_KEY
@@ -78,10 +79,6 @@ class WeatherRepository @Inject constructor(
     val error: LiveData<Throwable>
         get() = errorMutable
 
-    private val placesMutable = MutableLiveData<PlacesResponse>()
-    private val placesErrorMutable = MutableLiveData<Throwable>()
-
-
     private fun insertWeatherData(weatherData: WeatherData) {
         GlobalScope.launch(Dispatchers.IO) {
             weatherDataDao.insert(weatherData)
@@ -126,26 +123,6 @@ class WeatherRepository @Inject constructor(
         }
     }
 
-    fun getLocationInfo(
-        url: String,
-        location: String,
-        radius: Int,
-        type: String,
-        key: String
-    ): MutableLiveData<PlacesResponse> {
-        placesDisposable?.add(
-            networkData.getLocationInformation(url, location, type, radius, key)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe({ placesMutable.postValue(it) }, { handlePlacesError(it) })
-        )
-        return placesMutable
-    }
-
-    private fun handlePlacesError(error: Throwable) {
-        placesErrorMutable.postValue(error)
-    }
-
     private fun networkLaunch(weatherRequestData: WeatherRequestData) {
         val current = networkData.getCurrentWeather(
             weatherRequestData.latitude,
@@ -174,7 +151,6 @@ class WeatherRepository @Inject constructor(
                 }).subscribeOn(Schedulers.io())
                 .subscribe(
                     {
-                        //this.getData(it.first, it.second)
                         val weatherData = WeatherData(it.first, it.second)
                         insertWeatherData(weatherData)
                     },

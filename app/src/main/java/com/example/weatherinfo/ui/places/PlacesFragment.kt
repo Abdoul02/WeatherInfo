@@ -1,9 +1,7 @@
 package com.example.weatherinfo.ui.places
 
 import android.content.DialogInterface
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,18 +9,16 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.weatherinfo.MyApplication
 
 import com.example.weatherinfo.R
-import com.example.weatherinfo.model.places.PlacesResponse
+import com.example.weatherinfo.model.places.PlacesModel
 import com.example.weatherinfo.other.ReusableData
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
-import kotlin.system.exitProcess
 
 class PlacesFragment : Fragment() {
 
@@ -55,7 +51,6 @@ class PlacesFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
         if (!ReusableData.isOnline(this.context!!)) {
             ReusableData.showAlertDialog(
                 this.context!!,
@@ -86,30 +81,41 @@ class PlacesFragment : Fragment() {
 
     }
 
-    private fun displayInfo(placesResponse: PlacesResponse) {
-        if (placesResponse.results.isNotEmpty()) {
-            clMain.visibility = View.VISIBLE
-            clInfo.visibility = View.GONE
-            val result = placesResponse.results[0]
-            val picasso = Picasso.get()
-            //picasso.load(result.).into(imgPhoto)
-            tvName.text = this.getString(R.string.place_name, result.name)
-            tvOpen.text = if (result.opening_hours.open_now) this.getString(
-                R.string.place_open,
-                "YES"
-            ) else this.getString(R.string.place_open, "NO")
-            tvRate.text = this.getString(R.string.place_rating, result.rating.toString())
-            tvType.text = this.getString(R.string.place_type, getTypeList(result.types))
+    private fun displayInfo(placesModel: PlacesModel) {
+
+        if (placesModel.placesResponse != null) {
+
+            if (placesModel.placesResponse.status == "OK") {
+                clMain.visibility = View.VISIBLE
+                clInfo.visibility = View.GONE
+                val result = placesModel.placesResponse.results.first()
+                tvName.text = this.getString(R.string.place_name, result.name)
+                tvOpen.text = if (result.opening_hours != null) {
+                    if (result.opening_hours.open_now) this.getString(
+                        R.string.place_open,
+                        "YES"
+                    ) else this.getString(R.string.place_open, "NO")
+                } else {
+                    this.getString(R.string.place_open, "N/A")
+                }
+                tvRate.text = this.getString(R.string.place_rating, result.rating.toString())
+                tvType.text = this.getString(R.string.place_type, getTypeList(result.types))
+            } else {
+                ReusableData.showAlertDialog(
+                    this.context!!,
+                    "Location Error",
+                    placesModel.placesResponse.error_message,
+                    dialogOnClickListener
+                )
+            }
         } else {
             ReusableData.showAlertDialog(
                 this.context!!,
                 "Location Error",
-                "An error occurred Please try again later",
+                placesModel.error?.message,
                 dialogOnClickListener
             )
         }
-
-
     }
 
     private fun getTypeList(types: List<String>): String {
@@ -118,6 +124,6 @@ class PlacesFragment : Fragment() {
 
     private val dialogOnClickListener =
         DialogInterface.OnClickListener() { _: DialogInterface, _: Int ->
-           findNavController().navigate(R.id.action_placesFragment_to_nav_favorite)
+            findNavController().navigate(R.id.action_placesFragment_to_nav_favorite)
         }
 }
