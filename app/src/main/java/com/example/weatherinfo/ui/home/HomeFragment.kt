@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
 import com.example.weatherinfo.model.UserLocation
@@ -45,6 +46,7 @@ class HomeFragment : Fragment() {
     lateinit var forecastRecycleView: RecyclerView
     lateinit var addFavoriteFab: FloatingActionButton
     lateinit var tvLastUpdated: TextView
+    private lateinit var dotAnimation: LottieAnimationView
 
     private val LOCATION_PERMISSION = 101
 
@@ -61,6 +63,7 @@ class HomeFragment : Fragment() {
         forecastRecycleView = root.findViewById(R.id.forecastRecycleView)
         addFavoriteFab = root.findViewById(R.id.favouriteFab)
         tvLastUpdated = root.findViewById(R.id.tvLastUpdated)
+        dotAnimation = root.findViewById(R.id.lottie_dots_animation)
         this.context?.let { mContext ->
             forecastAdapter = ForecastAdapter(mContext)
             forecastRecycleView.layoutManager = LinearLayoutManager(mContext)
@@ -82,6 +85,8 @@ class HomeFragment : Fragment() {
                 (it.application as MyApplication).get(it).getApplicationComponent()
                     ?.injectApplication(this)
             }
+            dotAnimation.repeatCount = 10
+            dotAnimation.playAnimation()
             homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
             homeViewModel.weatherDbData.observe(viewLifecycleOwner, Observer { it ->
                 it?.let { weatherData ->
@@ -165,6 +170,7 @@ class HomeFragment : Fragment() {
 
         if (!currentWeather.weather.isNullOrEmpty()) {
             updateBackground(currentWeather.weather[0].main)
+            dotAnimation.cancelAnimation()
             clProgress.visibility = View.GONE
             clCurrentWeather.visibility = View.VISIBLE
             clForeCastWeather.visibility = View.VISIBLE

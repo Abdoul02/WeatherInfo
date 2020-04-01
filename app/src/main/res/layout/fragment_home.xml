@@ -17,23 +17,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/lottie_dots_animation"
+                android:layout_width="0dp"
+                android:layout_height="200dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:lottie_autoPlay="false"
+                app:lottie_fileName="dots_animation.json"
+                app:lottie_loop="false"
+                app:lottie_speed="1.25" />
 
             <TextView
+                android:id="@+id/tvNoLocations"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Loading..."
-                android:textColor="#000"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@+id/progressBar"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:text="@string/loading"
+                android:layout_marginTop="10dp"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/font_size_medium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/lottie_dots_animation" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
