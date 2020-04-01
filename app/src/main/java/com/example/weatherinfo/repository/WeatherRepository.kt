@@ -14,6 +14,7 @@ import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
+import com.example.weatherinfo.model.places.PlacesModel
 import com.example.weatherinfo.model.places.PlacesResponse
 import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.other.ReusableData.WEATHER_API_KEY
@@ -80,6 +81,7 @@ class WeatherRepository @Inject constructor(
 
     private val placesMutable = MutableLiveData<PlacesResponse>()
     private val placesErrorMutable = MutableLiveData<Throwable>()
+    private val placeModelMutable = MutableLiveData<PlacesModel>()
 
 
     private fun insertWeatherData(weatherData: WeatherData) {
@@ -132,18 +134,21 @@ class WeatherRepository @Inject constructor(
         radius: Int,
         type: String,
         key: String
-    ): MutableLiveData<PlacesResponse> {
+    ): MutableLiveData<PlacesModel> {
         placesDisposable?.add(
             networkData.getLocationInformation(url, location, type, radius, key)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .subscribe({ placesMutable.postValue(it) }, { handlePlacesError(it) })
+                .subscribe({
+                    val placeModel = PlacesModel(placesResponse = it)
+                    placeModelMutable.postValue(placeModel)
+                    //placesMutable.postValue(it)
+                }, {
+                    val placeModel = PlacesModel(error = it)
+                    placeModelMutable.postValue(placeModel)
+                })
         )
-        return placesMutable
-    }
-
-    private fun handlePlacesError(error: Throwable) {
-        placesErrorMutable.postValue(error)
+        return placeModelMutable
     }
 
     private fun networkLaunch(weatherRequestData: WeatherRequestData) {
@@ -174,7 +179,6 @@ class WeatherRepository @Inject constructor(
                 }).subscribeOn(Schedulers.io())
                 .subscribe(
                     {
-                        //this.getData(it.first, it.second)
                         val weatherData = WeatherData(it.first, it.second)
                         insertWeatherData(weatherData)
                     },

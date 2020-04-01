@@ -5,7 +5,7 @@ data class Result(
     val icon: String,
     val id: String,
     val name: String,
-    val opening_hours: OpeningHours,
+    val opening_hours: OpeningHours? = null,
     val photos: List<Photo>,
     val place_id: String,
     val plus_code: PlusCode,
