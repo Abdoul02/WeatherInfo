@@ -73,7 +73,7 @@ class MyApplication : Application() {
             .setRequiresBatteryNotLow(true)
             .build()
         return PeriodicWorkRequest.Builder(
-            WeatherInfoWorker::class.java, 5, TimeUnit.MINUTES
+            WeatherInfoWorker::class.java, 2, TimeUnit.HOURS
         )
             .setConstraints(workerConstraints)
             .setInitialDelay(5, TimeUnit.MINUTES)

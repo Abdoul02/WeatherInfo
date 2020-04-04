@@ -10,7 +10,6 @@ import com.example.weatherinfo.MainActivity
 import com.example.weatherinfo.MyApplication.Companion.CHANEL_ID
 import com.example.weatherinfo.MyApplication.Companion.NOTIFICATION_REQUEST_CODE
 import com.example.weatherinfo.R
-import com.example.weatherinfo.ui.home.HomeFragment
 
 object Notification {
 
