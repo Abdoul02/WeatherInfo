@@ -14,6 +14,6 @@ interface LocationDao {
     @Delete
     suspend fun deleteLocation(userLocation: UserLocation)
 
-    @Query("SELECT * FROM $LOCATION_TABLE ORDER BY id")
+    @Query("SELECT * FROM $LOCATION_TABLE ORDER BY name")
     fun getLocations(): LiveData<List<UserLocation>>
 }
