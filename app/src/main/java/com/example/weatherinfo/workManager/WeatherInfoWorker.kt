@@ -40,6 +40,7 @@ class WeatherInfoWorker(
         fusedLocation.lastLocation.addOnCompleteListener { task ->
             val location: Location? = task.result
             if (location == null) {
+                Log.d("WeatherInfoWorker", "location is null ")
                 requestNewLocation()
             } else {
                 Log.d(
