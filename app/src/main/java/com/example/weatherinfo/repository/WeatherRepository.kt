@@ -91,6 +91,12 @@ class WeatherRepository @Inject constructor(
         }
     }
 
+    fun deleteLocation(userLocation: UserLocation) {
+        GlobalScope.launch {
+            locationDao.deleteLocation(userLocation)
+        }
+    }
+
     fun getLocations(): LiveData<List<UserLocation>> {
         return locationDao.getLocations()
     }

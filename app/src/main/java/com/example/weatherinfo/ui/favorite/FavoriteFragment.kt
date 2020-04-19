@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,7 @@ import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.other.LocationListAdapter
 import com.example.weatherinfo.ui.map.MapsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
 
 class FavoriteFragment : Fragment() {
@@ -29,6 +31,7 @@ class FavoriteFragment : Fragment() {
     private lateinit var locationListAdapter: LocationListAdapter
     private lateinit var mapFab: FloatingActionButton
     private lateinit var tvNoLocation: TextView
+    private var deleteFromDB = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,6 +80,39 @@ class FavoriteFragment : Fragment() {
                         userLocation.longitude.toString()
                     )
                 )
+            }
+
+            override fun onDeleteIconClick(position: Int) {
+                val location = locationListAdapter.getLocation(position)
+                locationListAdapter.removeLocation(position)
+                activity?.let {
+                    val snackBar = Snackbar.make(
+                        mapFab,
+                        "Location removed from favorite",
+                        Snackbar.LENGTH_SHORT
+                    )
+                    snackBar.setAction("UNDO") {
+                        deleteFromDB = false
+                        locationListAdapter.restoreLocation(location, position)
+                    }
+                    snackBar.show()
+
+                    snackBar.addCallback(object : Snackbar.Callback() {
+                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                            if (event == DISMISS_EVENT_TIMEOUT) {
+                                favoriteViewModel.deleteLocation(location)
+                            }
+                            if (event == DISMISS_EVENT_ACTION) {
+                                Toast.makeText(it, "Location restored", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onShown(sb: Snackbar?) {
+                            super.onShown(sb)
+                            deleteFromDB = true
+                        }
+                    })
+                }
             }
         })
         mapFab.setOnClickListener {

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,13 +24,13 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.R
 import com.example.weatherinfo.model.UserLocation
-import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.enums.WeatherTypes
+import com.example.weatherinfo.other.ForecastAdapter
+import com.example.weatherinfo.other.ReusableData
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_home.*
-import com.example.weatherinfo.other.ForecastAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -47,8 +46,6 @@ class HomeFragment : Fragment() {
     lateinit var addFavoriteFab: FloatingActionButton
     lateinit var tvLastUpdated: TextView
     private lateinit var dotAnimation: LottieAnimationView
-
-    private val LOCATION_PERMISSION = 101
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -107,6 +104,8 @@ class HomeFragment : Fragment() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 this.context!!, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this.context!!, Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             return true
@@ -118,7 +117,8 @@ class HomeFragment : Fragment() {
         requestPermissions(
             arrayOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ),
             LOCATION_PERMISSION
         )
@@ -141,7 +141,7 @@ class HomeFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == LOCATION_PERMISSION) {
+        if (requestCode == Companion.LOCATION_PERMISSION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 getDataFromViewModel()
             } else {
@@ -228,7 +228,16 @@ class HomeFragment : Fragment() {
                 currentWeather.name
             )
 
-            // val loc = UserLocation(101, -26.107567,28.056702, "Sandton") //Test
+/*           //Test Data
+            val loc1 = UserLocation(101, -26.107567, 28.056702, "Sandton") //Test
+            val loc2 = UserLocation(102, -26.140499438, 28.037666516, "RoseBank")
+            val loc3 = UserLocation(103, -26.2, 28.05, "Johannesburg")
+            val loc4 = UserLocation(104, -25.98953, 28.12843, "Midrand")
+            val loc5 = UserLocation(105, -26.093611, 28.006390, "Randburg")
+            val listOfLocation = arrayListOf(loc1, loc2, loc3, loc4, loc5)
+            for(location in listOfLocation){
+                homeViewModel.insertLocation(location)
+            }*/
             homeViewModel.insertLocation(userLocation)
             Snackbar.make(view, "Location successfully added to favorite", Snackbar.LENGTH_LONG)
                 .show()
@@ -286,5 +295,9 @@ class HomeFragment : Fragment() {
                 )
             }
         }
+    }
+
+    companion object {
+        const val LOCATION_PERMISSION = 101
     }
 }

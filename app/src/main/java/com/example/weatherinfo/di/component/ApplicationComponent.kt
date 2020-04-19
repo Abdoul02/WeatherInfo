@@ -9,10 +9,11 @@ import com.example.weatherinfo.ui.map.MapsActivity
 import com.example.weatherinfo.ui.favorite.FavoriteFragment
 import com.example.weatherinfo.ui.home.HomeFragment
 import com.example.weatherinfo.ui.places.PlacesFragment
+import com.example.weatherinfo.workManager.SampleWorkerFactory
 import dagger.Component
 
 @ApplicationScope
-@Component(modules = [ContextModule::class, RetrofitModule::class, MyApplicationModule::class, DatabaseModule::class])
+@Component(modules = [ContextModule::class, RetrofitModule::class, MyApplicationModule::class, DatabaseModule::class, WorkerModule::class])
 interface ApplicationComponent {
 
     fun getApiInterface(): ApiInterface
@@ -24,4 +25,5 @@ interface ApplicationComponent {
     fun injectFavoriteFragment(favoriteFragment: FavoriteFragment)
     fun injectPlaceFragment(placesFragment: PlacesFragment)
     fun injectMapActivity(mapsActivity: MapsActivity)
+    fun factory(): SampleWorkerFactory
 }
