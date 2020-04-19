@@ -7,8 +7,12 @@ import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.repository.WeatherRepository
 import javax.inject.Inject
 
-class FavoriteViewModel @Inject constructor(weatherRepository: WeatherRepository) :
+class FavoriteViewModel @Inject constructor(private val weatherRepository: WeatherRepository) :
     ViewModel() {
 
     val locations: LiveData<List<UserLocation>> = weatherRepository.getLocations()
+
+    fun deleteLocation(userLocation: UserLocation) {
+        weatherRepository.deleteLocation(userLocation)
+    }
 }

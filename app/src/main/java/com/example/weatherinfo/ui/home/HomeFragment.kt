@@ -228,7 +228,7 @@ class HomeFragment : Fragment() {
                 currentWeather.name
             )
 
-/*           Test Data
+/*           //Test Data
             val loc1 = UserLocation(101, -26.107567, 28.056702, "Sandton") //Test
             val loc2 = UserLocation(102, -26.140499438, 28.037666516, "RoseBank")
             val loc3 = UserLocation(103, -26.2, 28.05, "Johannesburg")
