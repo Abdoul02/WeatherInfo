@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -46,6 +47,7 @@ class HomeFragment : Fragment() {
     lateinit var addFavoriteFab: FloatingActionButton
     lateinit var tvLastUpdated: TextView
     private lateinit var dotAnimation: LottieAnimationView
+    private lateinit var clProgress: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +63,7 @@ class HomeFragment : Fragment() {
         addFavoriteFab = root.findViewById(R.id.favouriteFab)
         tvLastUpdated = root.findViewById(R.id.tvLastUpdated)
         dotAnimation = root.findViewById(R.id.lottie_dots_animation)
+        clProgress = root.findViewById(R.id.clProgress)
         this.context?.let { mContext ->
             forecastAdapter = ForecastAdapter(mContext)
             forecastRecycleView.layoutManager = LinearLayoutManager(mContext)
@@ -76,7 +79,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun getDataFromViewModel() {
-
         if (isLocationEnabled()) {
             activity?.let {
                 (it.application as MyApplication).get(it).getApplicationComponent()
@@ -85,12 +87,12 @@ class HomeFragment : Fragment() {
             dotAnimation.repeatCount = 10
             dotAnimation.playAnimation()
             homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
-            homeViewModel.weatherDbData.observe(viewLifecycleOwner, Observer { it ->
+            noNetwork()
+            homeViewModel.weatherDbData.observe(viewLifecycleOwner, Observer {
                 it?.let { weatherData ->
                     updateViews(weatherData)
                 }
             })
-
         } else {
             showMessage("Please turn on location")
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
@@ -141,7 +143,7 @@ class HomeFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == Companion.LOCATION_PERMISSION) {
+        if (requestCode == LOCATION_PERMISSION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 getDataFromViewModel()
             } else {
@@ -185,7 +187,10 @@ class HomeFragment : Fragment() {
                 if (!ReusableData.isOnline(it)) {
                     tvLastUpdated.visibility = View.VISIBLE
                     tvLastUpdated.text =
-                        it.getString(R.string.last_updated, getDate(currentWeather.dt.toLong()))
+                        it.getString(
+                            R.string.last_updated,
+                            ReusableData.convertLongToTime(currentWeather.dt.toLong())/*getDate(currentWeather.dt.toLong())*/
+                        )
                     Snackbar.make(
                         addFavoriteFab,
                         "Network error, last saved weather displayed",
@@ -209,16 +214,6 @@ class HomeFragment : Fragment() {
                 currentWeather.main.temp_max.toInt().toString(),
                 "\u2103"
             )
-        } else {
-            if (!ReusableData.isOnline(this.context!!)) {
-                clProgress.visibility = View.GONE
-                ReusableData.showAlertDialog(
-                    this.context!!,
-                    "Network Error",
-                    "Network error, please connect to internet",
-                    dialogOnClickListener
-                )
-            }
         }
         addFavoriteFab.setOnClickListener { view ->
             val userLocation = UserLocation(
@@ -245,11 +240,17 @@ class HomeFragment : Fragment() {
 
     }
 
-    private fun getDate(milliSeconds: Long): String {
-        val formatter = SimpleDateFormat("dd-MM-yyyy hh:mm:ss", Locale.UK)
-        val calender = Calendar.getInstance()
-        calender.timeInMillis = milliSeconds
-        return formatter.format(calender.time)
+    private fun noNetwork() {
+        if (!ReusableData.isOnline(this.context!!)) {
+            if (dotAnimation.isAnimating) dotAnimation.cancelAnimation()
+            clProgress.visibility = View.GONE
+            ReusableData.showAlertDialog(
+                this.context!!,
+                "Network Error",
+                "Network error, please connect to internet",
+                dialogOnClickListener
+            )
+        }
     }
 
     private fun updateBackground(weatherType: String) {

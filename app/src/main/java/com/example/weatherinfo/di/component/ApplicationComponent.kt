@@ -1,6 +1,8 @@
 package com.example.weatherinfo.di.component
 
 import android.content.Context
+import com.example.weatherinfo.data.sharedPref.IPreferencesManager
+import com.example.weatherinfo.data.sharedPref.PreferencesManager
 import com.example.weatherinfo.di.module.*
 import com.example.weatherinfo.di.qualifier.ApplicationContext
 import com.example.weatherinfo.di.scope.ApplicationScope
@@ -13,7 +15,7 @@ import com.example.weatherinfo.workManager.SampleWorkerFactory
 import dagger.Component
 
 @ApplicationScope
-@Component(modules = [ContextModule::class, RetrofitModule::class, MyApplicationModule::class, DatabaseModule::class, WorkerModule::class])
+@Component(modules = [ContextModule::class, RetrofitModule::class, MyApplicationModule::class, DatabaseModule::class, WorkerModule::class, SharedPrefModule::class])
 interface ApplicationComponent {
 
     fun getApiInterface(): ApiInterface

@@ -12,6 +12,7 @@ import com.example.weatherinfo.di.component.DaggerApplicationComponent
 import com.example.weatherinfo.di.module.ContextModule
 import com.example.weatherinfo.di.module.DatabaseModule
 import com.example.weatherinfo.di.module.MyApplicationModule
+import com.example.weatherinfo.di.module.SharedPrefModule
 import com.example.weatherinfo.workManager.SampleWorkerFactory
 import com.example.weatherinfo.workManager.WeatherInfoWorker
 import java.util.concurrent.TimeUnit
@@ -29,6 +30,7 @@ class MyApplication : Application() {
             .contextModule(ContextModule(this))
             .databaseModule(DatabaseModule(this))
             .myApplicationModule(MyApplicationModule(this))
+            .sharedPrefModule(SharedPrefModule(this))
             .build()
         component?.let {
             val factory = it.factory()

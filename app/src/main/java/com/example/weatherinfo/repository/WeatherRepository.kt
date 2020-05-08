@@ -9,16 +9,17 @@ import com.example.weatherinfo.MyApplication
 import com.example.weatherinfo.data.NetworkData
 import com.example.weatherinfo.data.dao.LocationDao
 import com.example.weatherinfo.data.dao.WeatherDataDao
+import com.example.weatherinfo.data.sharedPref.IPreferencesManager
 import com.example.weatherinfo.model.UserLocation
 import com.example.weatherinfo.model.WeatherData
 import com.example.weatherinfo.model.WeatherRequestData
 import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
-import com.example.weatherinfo.model.places.PlacesModel
-import com.example.weatherinfo.model.places.PlacesResponse
 import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.other.ReusableData.WEATHER_API_KEY
 import com.example.weatherinfo.other.ReusableData.WEATHER_UNIT
+import com.example.weatherinfo.other.ReusableData.callRequired
+import com.example.weatherinfo.other.ReusableData.currentTimeToLong
 import com.google.android.gms.location.*
 import dagger.Reusable
 import io.reactivex.Observable
@@ -35,18 +36,25 @@ class WeatherRepository @Inject constructor(
     private val networkData: NetworkData,
     private val application: MyApplication,
     private val weatherDataDao: WeatherDataDao,
-    private val locationDao: LocationDao
+    private val locationDao: LocationDao,
+    private val prefManager: IPreferencesManager
 ) {
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
     private val disposable: CompositeDisposable? = CompositeDisposable()
-    private val placesDisposable: CompositeDisposable? = CompositeDisposable()
 
     init {
+/*         Log.d("TimeRequired", "Call Required: ${prefManager.getLastCallTime()?.let {
+             callRequired(
+                 it
+             )
+         }}")
+
         if (ReusableData.isOnline(application)) {
             clearTables()
             loadData()
-        }
+        }*/
+        makeCallIfNeeded()
     }
 
     private fun requestNewLocationData() {
@@ -159,8 +167,17 @@ class WeatherRepository @Inject constructor(
                     {
                         val weatherData = WeatherData(it.first, it.second)
                         insertWeatherData(weatherData)
+                        prefManager.saveLastCallTime(currentTimeToLong())
                     },
                     { errorMutable.postValue(it) })
         )
+    }
+
+    private fun makeCallIfNeeded() {
+        val lastCall = prefManager.getLastCallTime()
+        if (callRequired(lastCall!!)) {
+            clearTables()
+            loadData()
+        }
     }
 }
