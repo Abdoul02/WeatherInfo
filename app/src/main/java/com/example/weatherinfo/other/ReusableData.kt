@@ -1,10 +1,15 @@
 package com.example.weatherinfo.other
 
+import android.R
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.widget.Toast
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+
 
 object ReusableData {
 
@@ -38,5 +43,14 @@ object ReusableData {
             NetworkCapabilities.NET_CAPABILITY_INTERNET
         ) &&
                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+     fun checkPlayServices(context: Context): Boolean {
+        val gApi = GoogleApiAvailability.getInstance()
+        val resultCode = gApi.isGooglePlayServicesAvailable(context)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            return false
+        }
+        return true
     }
 }

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,15 +47,13 @@ class HomeFragment : Fragment() {
     lateinit var addFavoriteFab: FloatingActionButton
     lateinit var tvLastUpdated: TextView
     private lateinit var dotAnimation: LottieAnimationView
+    private var isDataFetched = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        if (!checkPermission()) {
-            requestPermission()
-        }
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         forecastRecycleView = root.findViewById(R.id.forecastRecycleView)
@@ -69,6 +68,8 @@ class HomeFragment : Fragment() {
 
             if (checkPermission()) {
                 getDataFromViewModel()
+            } else {
+                requestPermission()
             }
         }
 
@@ -90,7 +91,7 @@ class HomeFragment : Fragment() {
                     updateViews(weatherData)
                 }
             })
-
+            isDataFetched = true
         } else {
             showMessage("Please turn on location")
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
@@ -98,15 +99,25 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (isLocationEnabled() && checkPermission() && !isDataFetched) {
+            getDataFromViewModel()
+        }
+    }
+
     private fun checkPermission(): Boolean {
         if (ActivityCompat.checkSelfPermission(
-                this.context!!,
+                requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this.context!!, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this.context!!, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            (ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED ||
+                    android.os.Build.VERSION.SDK_INT != android.os.Build.VERSION_CODES.Q)
         ) {
             return true
         }
@@ -115,13 +126,20 @@ class HomeFragment : Fragment() {
 
     private fun requestPermission() {
         requestPermissions(
-            arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ),
+            getPermissions(),
             LOCATION_PERMISSION
         )
+    }
+
+    private fun getPermissions(): Array<String> {
+        val permissions = mutableListOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+        return permissions.toTypedArray()
     }
 
     private fun isLocationEnabled(): Boolean {

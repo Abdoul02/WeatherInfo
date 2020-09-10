@@ -1,5 +1,6 @@
 package com.example.weatherinfo.repository
 
+import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Looper
 import android.util.Log
@@ -16,6 +17,7 @@ import com.example.weatherinfo.model.currentWeather.CurrentWeatherModel
 import com.example.weatherinfo.model.forecast.ForecastModel
 import com.example.weatherinfo.model.places.PlacesModel
 import com.example.weatherinfo.model.places.PlacesResponse
+import com.example.weatherinfo.other.GPSTracker
 import com.example.weatherinfo.other.ReusableData
 import com.example.weatherinfo.other.ReusableData.WEATHER_API_KEY
 import com.example.weatherinfo.other.ReusableData.WEATHER_UNIT
@@ -35,7 +37,8 @@ class WeatherRepository @Inject constructor(
     private val networkData: NetworkData,
     private val application: MyApplication,
     private val weatherDataDao: WeatherDataDao,
-    private val locationDao: LocationDao
+    private val locationDao: LocationDao,
+    private val gpsTracker: GPSTracker
 ) {
     private var mFusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
@@ -112,20 +115,37 @@ class WeatherRepository @Inject constructor(
         return weatherDataDao.getWeatherData()
     }
 
+    @SuppressLint("MissingPermission")
     private fun loadData() {
-        mFusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
-            val location: Location? = task.result
-            if (location == null) {
-                requestNewLocationData()
-            } else {
+        if (ReusableData.checkPlayServices(application)) {
+            mFusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
+                val location: Location? = task.result
+                if (location == null) {
+                    requestNewLocationData()
+                } else {
+                    val weatherRequestData = WeatherRequestData(
+                        latitude = location.latitude.toString(),
+                        longitude = location.longitude.toString(),
+                        metric = WEATHER_UNIT,
+                        key = WEATHER_API_KEY
+                    )
+                    networkLaunch(weatherRequestData)
+                }
+
+            }
+        } else {
+            if (gpsTracker.canGetLocation()) {
                 val weatherRequestData = WeatherRequestData(
-                    latitude = location.latitude.toString(),
-                    longitude = location.longitude.toString(), metric = WEATHER_UNIT,
+                    latitude = gpsTracker.getLatitude().toString(),
+                    longitude = gpsTracker.getLongitude().toString(),
+                    metric = WEATHER_UNIT,
                     key = WEATHER_API_KEY
                 )
                 networkLaunch(weatherRequestData)
+                Log.d("GetData", "Lat: ${gpsTracker.getLatitude()} long: ${gpsTracker.getLongitude()}")
+            } else {
+                Log.d("GetData", "Can't get location...")
             }
-
         }
     }
 
